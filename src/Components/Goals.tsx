@@ -1,57 +1,57 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import {
+	Button,
+} from "@material-ui/core";
+import {
+	Add as AddIcon
+} from '@mui/icons-material';
 
-import { GoalCard } from ".";
+import { GoalCard, CreateGoalCard } from ".";
+import { getAllGoals, createGoal, setGoalCompletion, isGoalCompletedOnDate } from "../Services/Goals";
 
-import { Goal } from "../Types";
-
-const EXAMPLE_GOALS: Array<Goal> = [
-	{
-		ID: 1,
-		Title: "Goal 1",
-		Motivation: "Motivation 1",
-		CurrentStreak: 20,
-		BestStreak: 20,
-		Completed: true,
-	},
-	{
-		ID: 2,
-		Title: "Goal 2",
-		Motivation: "Motivation 2",
-		CurrentStreak: 4,
-		BestStreak: 10,
-		Completed: false,
-	},
-	{
-		ID: 3,
-		Title: "Goal 3",
-		Motivation: "Motivation 3",
-		CurrentStreak: 2,
-		BestStreak: 3,
-		Completed: true,
-	},
-];
+import { Goal, NewGoal } from "../Types";
 
 export default function Goals(): JSX.Element {
-	const [ goals, setGoals ] = useState<Array<Goal>>(EXAMPLE_GOALS);
+	const [ goals, setGoals ] = useState<Array<Goal>>([]);
+	const [ displayCreateCard, setDisplayCreateCard ] = useState<boolean>(false);
 
-	const toggleGoalCompletion = (index: number): void => {
-		let goal = goals[index];
-		goal.Completed = !goal.Completed;
-		goal.CurrentStreak += (goal.Completed ? 1 : -1);
+	useEffect(() => {
+		(async () => {
+			fetchAllGoals();
+		})()
+	}, []);
 
-		setGoals([
-			...goals.slice(0, index),
-			goal,
-			...goals.slice(index + 1),
-		]);
+	const fetchAllGoals = async () => {
+		let data = await getAllGoals();
+		setGoals(data);
+	};
+
+	const toggleCreateCard = () => {
+		setDisplayCreateCard(!displayCreateCard);
+	};
+
+	const submitGoal = async (newGoal: NewGoal) => {
+		toggleCreateCard();
+		await createGoal(newGoal);
+		await fetchAllGoals();
+	};
+
+	const todaysDate = new Date().toISOString().split("T")[0];
+	const toggleGoalCompletion = async (goal: Goal, isCompleted: boolean): Promise<void> => {
+		await setGoalCompletion(goal, todaysDate, isCompleted);
+
+		await fetchAllGoals();
 	};
 
 	return (
 		<>
-			{goals.map((goal: Goal, index: number) => (
+			<Button variant="contained" startIcon={<AddIcon />} onClick={toggleCreateCard}>Create</Button>
+			{displayCreateCard ? <CreateGoalCard submitGoal={submitGoal} /> : <></>}
+			{goals.map((goal: Goal) => (
 					<GoalCard
+						key={goal.uuid}
 						goal={goal}
-						index={index}
+						completed={isGoalCompletedOnDate(goal, todaysDate)}
 						toggleCompletion={toggleGoalCompletion}
 					/>
 			))}

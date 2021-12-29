@@ -11,9 +11,9 @@ import { Goal } from "../Types";
 
 interface Props {
 	goal: Goal;
-	index: number;
+	completed: boolean;
 
-	toggleCompletion: (index: number) => void;
+	toggleCompletion: (goal: Goal, completed: boolean) => Promise<void>;
 }
 
 const FIRE_EMOJI = 0x1F525;
@@ -34,12 +34,17 @@ const useStyles = makeStyles({
 });
 
 export default function GoalCard(props: Props): JSX.Element {
-	const { index, goal, toggleCompletion } = props;
+	const { goal, toggleCompletion, completed } = props;
 	const classes = useStyles();
 
+	let currentStreak = 0;
+	if (goal.streak_dates != null && goal.streak_dates.length > 0) {
+		currentStreak = goal.streaks[goal.streak_dates[0]]?.streak_length;
+	}
+
 	return (
-		<Card className={`${goal.Completed ? classes.crossedOut : ""} ${classes.card}`}>
-			<CardActionArea onClick={() => toggleCompletion(index)}>
+		<Card className={`${completed ? classes.crossedOut : ""} ${classes.card}`}>
+			<CardActionArea onClick={() => toggleCompletion(goal, !completed)}>
 				<CardContent>
 					<Grid
 						container
@@ -48,15 +53,15 @@ export default function GoalCard(props: Props): JSX.Element {
 					>
 						<Grid item>
 							<Typography variant="h5">
-								{goal.Title}
+								{goal.title}
 							</Typography>
 							<Typography>
-								{goal.Motivation}
+								{goal.motivation}
 							</Typography>
 						</Grid>
 						<Grid item>
-							<p>{String.fromCodePoint(FIRE_EMOJI)} {goal.CurrentStreak}</p>
-							<p>Best: {goal.BestStreak}</p>
+							<p>{String.fromCodePoint(FIRE_EMOJI)} {currentStreak}</p>
+							<p>Best: {goal.best_streak}</p>
 						</Grid>
 					</Grid>
 				</CardContent>

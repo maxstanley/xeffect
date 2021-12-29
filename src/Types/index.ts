@@ -1,2 +1,2 @@
-export type { default as Goal } from "./Goal";
+export type { NewGoal, Goal, GoalStreak } from "./Goal";
 
