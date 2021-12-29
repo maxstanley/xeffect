@@ -1,15 +1,11 @@
-import { ChangeEvent, useEffect, useState } from "react";
+import { ChangeEvent, useState } from "react";
 import {
-	Box,
 	Button,
 	Card,
-	CardActionArea,
 	CardContent,
 	Container,
-	Grid,
 	makeStyles,
 	TextField,
-	Typography
 } from "@material-ui/core";
 
 import { NewGoal } from "../Types";
